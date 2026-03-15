@@ -8,7 +8,8 @@ A modular Python framework for experimenting with Federated Learning (FL) algori
 - **Extensible Design** - Easy to add custom models, encryption schemes, or aggregation strategies via abstract base classes
 - **Simulation Environment** - High-level `Environment` class for quick experimentation
 - **Rich Visualizations** - Built-in tools for training history, model comparisons, and divergence analysis
-- **Flexible Data Loading** - Support for CSV files, pandas DataFrames, or numpy arrays
+- **Flexible Data Loading** - Support for CSV files, pandas DataFrames, or numpy arrays. Handles both standard and transposed formats (features as rows)
+- **Master Thesis Integration** - Compatible with master thesis data format and experiments. Load genomics datasets (Metabric) seamlessly
 - **Encryption Ready** - Interface for homomorphic encryption schemes (with `NoEncryption` baseline)
 - **Analytics** - Track local and global model performance across training rounds
 
@@ -494,13 +495,87 @@ class SimpleAdditiveMasking(EncryptionScheme):
 env = Environment(encryption_scheme=SimpleAdditiveMasking(), ...)
 ```
 
+## Master Thesis Data Integration
+
+The library supports data in transposed format (features as rows, samples as columns), which is used in the master thesis and genomics datasets like Metabric.
+
+### Loading Transposed Data
+
+```python
+from fed_playground import DataLoader
+
+# Load data with genes/features as rows (master thesis format)
+loader = DataLoader(
+    file_path='/path/to/Metabric.csv',
+    target_column='BRCA1',  # Gene to predict
+    feature_columns=['TP53', 'MKI67', 'FOXM1', 'KIF20A'],  # Predictor genes
+    transpose=True  # Indicate transposed format
+)
+
+X, y = loader.load()  # Returns data in standard format (samples × features)
+```
+
+### Thesis Integration Demo
+
+Run experiments matching master thesis methodology:
+
+```bash
+# Using synthetic data
+python examples/thesis_integration_demo.py \
+    --data synthetic \
+    --target y \
+    --features x1 x2 x3 x4 \
+    --instances-diff \
+    --rounds 5
+
+# Using Metabric data
+python examples/thesis_integration_demo.py \
+    --data metabric \
+    --target BRCA1 \
+    --features TP53 MKI67 FOXM1 KIF20A \
+    --data-diff
+
+# List all master thesis results
+python examples/thesis_integration_demo.py --list-results
+```
+
+### Thesis Utilities
+
+Helper functions for master thesis data compatibility:
+
+```python
+from examples.thesis_utils import (
+    load_thesis_csv,
+    parse_thesis_experiment_name,
+    get_thesis_data_path
+)
+
+# Load thesis data
+data = load_thesis_csv('/path/to/data.csv')
+
+# Get path to preset datasets
+synthetic_path = get_thesis_data_path('synthetic')
+metabric_path = get_thesis_data_path('metabric')
+
+# Parse thesis experiment directory names
+params = parse_thesis_experiment_name(
+    'instances_diff_y_x1-x2-x3-x4_max_15_min_2_samples_8_rounds_20'
+)
+print(params['mode'])      # 'instances_diff'
+print(params['target'])    # 'y'
+print(params['features'])  # ['x1', 'x2', 'x3', 'x4']
+```
+
 ## Examples
 
 See complete working examples in [`examples/`](file:///Users/cola/Desktop/Projects/fed_env/examples):
 
 - [`visualization_demo.py`](file:///Users/cola/Desktop/Projects/fed_env/examples/visualization_demo.py) - Comprehensive demonstration of all visualization tools
+- [`divergence_analysis.py`](file:///Users/cola/Desktop/Projects/fed_env/examples/divergence_analysis.py) - Full divergence analysis with multiple modes
+- [`thesis_integration_demo.py`](file:///Users/cola/Desktop/Projects/fed_env/examples/thesis_integration_demo.py) - Master thesis data integration and compatibility
+- [`thesis_utils.py`](file:///Users/cola/Desktop/Projects/fed_env/examples/thesis_utils.py) - Helper functions for thesis data
 
-Run the demo:
+Run the visualization demo:
 ```bash
 python examples/visualization_demo.py
 ```

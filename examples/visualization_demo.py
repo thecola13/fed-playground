@@ -44,11 +44,8 @@ def demo_training_history_visualizer():
     # Prepare data for visualization
     training_data = {
         "Global Loss": history["global_loss"],
+        "Avg Party Loss": history["party_loss"]
     }
-
-    # Add individual party losses if available
-    for i, party_losses in enumerate(history["party_loss"]):
-        training_data[f"Party {i}"] = party_losses
 
     # Visualize training history
     visualizer = TrainingHistoryVisualizer(save_dir="demo_results")
