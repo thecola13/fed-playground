@@ -1,33 +1,57 @@
-from .src.encryption import EncryptionScheme, NoEncryption
-from .src.models import Model, LinearRegressionModel, ClosedFormLinearRegressionModel
-from .src.aggregation import AggregationStrategy, MeanAggregation
-from .src.party import Party
-from .src.orchestrator import Orchestrator
-from .src.environment import Environment
+from .src.aggregation import (
+    AggregationStrategy,
+    MeanAggregation,
+    MedianAggregation,
+    TrimmedMeanAggregation,
+)
 from .src.dataloader import DataLoader
+from .src.encryption import (
+    AdditiveSecretSharing,
+    EncryptionScheme,
+    GaussianDPEncryption,
+    NoEncryption,
+)
+from .src.environment import Environment
+from .src.models import (
+    ClosedFormLinearRegressionModel,
+    LinearRegressionModel,
+    LogisticRegressionModel,
+    MLPRegressorModel,
+    Model,
+    RidgeRegressionModel,
+)
+from .src.orchestrator import Orchestrator
+from .src.party import Party
 from .src.visualization import (
-    Visualizer,
+    ComparisonVisualizer,
+    DivergencePlotter,  # Legacy alias
     DivergenceVisualizer,
     TrainingHistoryVisualizer,
-    ComparisonVisualizer,
-    DivergencePlotter  # Legacy alias
+    Visualizer,
 )
 
 __all__ = [
-    "EncryptionScheme",
-    "NoEncryption",
-    "Model",
-    "LinearRegressionModel",
-    "ClosedFormLinearRegressionModel",
+    "AdditiveSecretSharing",
     "AggregationStrategy",
-    "MeanAggregation",
-    "Party",
-    "Orchestrator",
-    "Environment",
-    "DataLoader",
-    "Visualizer",
-    "DivergenceVisualizer",
-    "TrainingHistoryVisualizer",
+    "ClosedFormLinearRegressionModel",
     "ComparisonVisualizer",
-    "DivergencePlotter"  # Legacy alias
+    "DataLoader",
+    "DivergencePlotter",  # Legacy alias
+    "DivergenceVisualizer",
+    "EncryptionScheme",
+    "Environment",
+    "GaussianDPEncryption",
+    "LinearRegressionModel",
+    "LogisticRegressionModel",
+    "MeanAggregation",
+    "MedianAggregation",
+    "MLPRegressorModel",
+    "Model",
+    "NoEncryption",
+    "Orchestrator",
+    "Party",
+    "RidgeRegressionModel",
+    "TrainingHistoryVisualizer",
+    "TrimmedMeanAggregation",
+    "Visualizer",
 ]
