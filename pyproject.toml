@@ -42,10 +42,10 @@ dependencies = [
 fedbench = "fed_playground.src.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/fed-env"
-Repository = "https://github.com/your-org/fed-env"
-Issues = "https://github.com/your-org/fed-env/issues"
-Changelog = "https://github.com/your-org/fed-env/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/thecola13/fedbench"
+Repository = "https://github.com/thecola13/fedbench"
+Issues = "https://github.com/thecola13/fedbench/issues"
+Changelog = "https://github.com/thecola13/fedbench/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 fhe = [

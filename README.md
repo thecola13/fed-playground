@@ -2,15 +2,12 @@
 
 > A modular federated learning simulation framework for research and education.
 
-[![CI](https://github.com/your-org/fed-env/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/fed-env/actions/workflows/ci.yml)
+[![CI](https://github.com/thecola13/fedbench/actions/workflows/ci.yml/badge.svg)](https://github.com/thecola13/fedbench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](pyproject.toml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue)](https://your-org.github.io/fed-env/)
-
-<!-- Badge/URL note: replace `your-org/fed-env` with the real GitHub path before publishing.
-     A PyPI badge is added at first release (Phase 3). -->
+[![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue)](https://thecola13.github.io/fedbench/)
 
 
 ## Table of Contents
@@ -166,7 +163,7 @@ the Python version and virtual environment automatically.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/fed-env.git
+git clone https://github.com/thecola13/fedbench.git
 cd fed-env
 
 # 2. Install dependencies and create the virtual environment
@@ -198,7 +195,7 @@ pytest
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/fed-env.git
+git clone https://github.com/thecola13/fedbench.git
 cd fed-env
 
 # 2. Create and activate a virtual environment
@@ -398,7 +395,7 @@ tests/test_utils_data.py     .......
 ### Setting up a dev environment
 
 ```bash
-git clone https://github.com/your-org/fed-env.git
+git clone https://github.com/thecola13/fedbench.git
 cd fed-env
 uv sync --extra dev
 ```

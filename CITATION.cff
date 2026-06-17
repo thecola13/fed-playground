@@ -8,7 +8,7 @@ message: >-
 type: software
 authors:
   - name: fed-env contributors
-repository-code: "https://github.com/your-org/fed-env"
+repository-code: "https://github.com/thecola13/fedbench"
 abstract: >-
   A dependency-light, pure-NumPy federated learning testbed
   built on a strategy pattern: models, aggregation

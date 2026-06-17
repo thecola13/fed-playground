@@ -1,6 +1,6 @@
 site_name: fed-env
 site_description: A modular, pure-NumPy federated learning simulation and benchmark framework
-repo_url: https://github.com/your-org/fed-env
+repo_url: https://github.com/thecola13/fedbench
 exclude_docs: |
   specs/
 
