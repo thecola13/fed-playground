@@ -8,7 +8,7 @@ is the primary entry point for users of the library.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -19,6 +19,9 @@ from .models import LinearRegressionModel, Model
 from .orchestrator import Orchestrator
 from .party import Party
 from .utils_data import generate_linear_data, split_data
+
+if TYPE_CHECKING:
+    from .attacks import Attack
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +71,13 @@ class Environment:
         model_class: type[Model] = LinearRegressionModel,
         model_params: dict[str, Any] | None = None,
         data_loader: DataLoader | None = None,
+        attack: Attack | None = None,
+        n_byzantine: int = 0,
     ) -> None:
         if n_parties < 1:
             raise ValueError(f"n_parties must be >= 1, got {n_parties}.")
+        if not 0 <= n_byzantine < n_parties:
+            raise ValueError(f"n_byzantine must be in [0, {n_parties}).")
 
         self.n_parties = n_parties
         self.n_features = n_features
@@ -82,6 +89,10 @@ class Environment:
         self.model_class = model_class
         self.model_params: dict[str, Any] = model_params or {}
         self.data_loader = data_loader
+        # First n_byzantine parties are adversarial; their updates are poisoned
+        # by `attack` at aggregation time.
+        self.attack = attack
+        self.byzantine_ids = list(range(n_byzantine))
 
         self.parties: list[Party] = []
         self.orchestrator: Orchestrator | None = None
@@ -137,6 +148,8 @@ class Environment:
             aggregation_strategy=self.aggregation_strategy,
             encryption_scheme=self.encryption_scheme,
             initial_model_params=initial_model.get_parameters(),
+            attack=self.attack,
+            byzantine_ids=self.byzantine_ids,
         )
         for party in self.parties:
             self.orchestrator.register_party(party)

@@ -3,7 +3,42 @@
 import numpy as np
 import pytest
 
-from fed_playground.src.utils_data import generate_linear_data, split_data
+from fed_playground.src.utils_data import (
+    dirichlet_partition,
+    generate_linear_data,
+    split_data,
+)
+
+
+def _labelled(n=600, n_classes=3, seed=0):
+    rng = np.random.default_rng(seed)
+    X = rng.standard_normal((n, 4))
+    y = rng.integers(0, n_classes, size=n)
+    return X, y
+
+
+class TestDirichletPartition:
+    def test_preserves_all_samples(self):
+        X, y = _labelled()
+        parts = dirichlet_partition(X, y, n_parties=5, alpha=0.5, random_seed=0)
+        assert len(parts) == 5
+        assert sum(len(yi) for _, yi in parts) == len(y)
+
+    def test_low_alpha_is_more_skewed_than_high_alpha(self):
+        X, y = _labelled()
+
+        def mean_classes_per_party(alpha):
+            parts = dirichlet_partition(X, y, n_parties=5, alpha=alpha, random_seed=1)
+            return np.mean([len(np.unique(yi)) for _, yi in parts if len(yi)])
+
+        # Strong non-IID (alpha=0.05) => fewer distinct classes per party.
+        assert mean_classes_per_party(0.05) < mean_classes_per_party(100.0)
+
+    def test_shapes_align(self):
+        X, y = _labelled()
+        for Xi, yi in dirichlet_partition(X, y, n_parties=4, random_seed=2):
+            assert Xi.shape[0] == yi.shape[0]
+            assert Xi.shape[1] == X.shape[1]
 
 
 class TestGenerateLinearData:

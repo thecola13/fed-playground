@@ -7,6 +7,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Benchmark engine** (`run_benchmark`): one-call Cartesian sweep over
+  (model × aggregation × encryption × attack × n_byzantine) → tidy DataFrame;
+  incompatible privacy×robustness cells recorded as NaN, not crashes.
+- **`Attack` strategy type** (`attacks.py`): `NoAttack`, `SignFlipAttack`,
+  `GaussianAttack`, `IPMAttack` (Xie et al. 2020), `ALittleIsEnoughAttack`
+  (Baruch et al. 2019). Wired into `Orchestrator`/`Environment` via
+  `attack` + `n_byzantine` (replaces ad-hoc Byzantine `Party` subclassing).
+- **`dirichlet_partition`**: non-IID label-skew data partitioning (Hsu et al. 2019).
 - Byzantine-robust aggregation strategies: `KrumAggregation` (incl. Multi-Krum),
   `BulyanAggregation`, `GeometricMedianAggregation` (RFA), `MedianOfMeansAggregation`,
   `CenteredClippingAggregation`.

@@ -73,3 +73,51 @@ def split_data(
     y_splits = np.array_split(y_shuffled, n_parties)
 
     return list(zip(X_splits, y_splits, strict=True))
+
+
+def dirichlet_partition(
+    X: np.ndarray,
+    y: np.ndarray,
+    n_parties: int,
+    alpha: float = 0.5,
+    random_seed: int | None = 42,
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Non-IID label-skew partition via a Dirichlet distribution.
+
+    Reference: Hsu, Qi & Brown, "Measuring the Effects of Non-Identical Data
+    Distribution for Federated Visual Classification", 2019.
+
+    For each class, the samples are split among parties in proportions drawn from
+    ``Dirichlet(alpha)``.  Small *alpha* (e.g. ``0.1``) yields highly skewed
+    shards (each party sees few classes); large *alpha* approaches an IID split.
+    Intended for classification targets (discrete labels).
+
+    Args:
+        X: Feature matrix of shape ``(n_samples, n_features)``.
+        y: Integer class labels of shape ``(n_samples,)``.
+        n_parties: Number of parties to partition across.
+        alpha: Dirichlet concentration; lower = more non-IID (default ``0.5``).
+        random_seed: Seed for reproducibility.
+
+    Returns:
+        List of ``n_parties`` ``(X_i, y_i)`` tuples (a party may be empty under
+        extreme skew).
+
+    Raises:
+        ValueError: If *n_parties* < 1.
+    """
+    if n_parties < 1:
+        raise ValueError(f"n_parties must be >= 1, got {n_parties}.")
+
+    rng = np.random.default_rng(random_seed)
+    party_idx: list[list[int]] = [[] for _ in range(n_parties)]
+    for c in np.unique(y):
+        idx = rng.permutation(np.where(y == c)[0])
+        props = rng.dirichlet(alpha * np.ones(n_parties))
+        cuts = (np.cumsum(props)[:-1] * len(idx)).astype(int)
+        for p, chunk in enumerate(np.split(idx, cuts)):
+            party_idx[p].extend(chunk.tolist())
+
+    return [
+        (X[np.array(ix, dtype=int)], y[np.array(ix, dtype=int)]) for ix in party_idx
+    ]

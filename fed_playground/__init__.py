@@ -9,6 +9,15 @@ from .src.aggregation import (
     MedianOfMeansAggregation,
     TrimmedMeanAggregation,
 )
+from .src.attacks import (
+    ALittleIsEnoughAttack,
+    Attack,
+    GaussianAttack,
+    IPMAttack,
+    NoAttack,
+    SignFlipAttack,
+)
+from .src.benchmark import run_benchmark
 from .src.dataloader import DataLoader
 from .src.encryption import (
     AdditiveSecretSharing,
@@ -35,6 +44,7 @@ from .src.models import (
 )
 from .src.orchestrator import Orchestrator
 from .src.party import Party
+from .src.utils_data import dirichlet_partition, generate_linear_data, split_data
 from .src.visualization import (
     ComparisonVisualizer,
     DivergencePlotter,  # Legacy alias
@@ -45,8 +55,10 @@ from .src.visualization import (
 )
 
 __all__ = [
+    "ALittleIsEnoughAttack",
     "AdditiveSecretSharing",
     "AggregationStrategy",
+    "Attack",
     "BulyanAggregation",
     "CenteredClippingAggregation",
     "ClosedFormLinearRegressionModel",
@@ -57,9 +69,11 @@ __all__ = [
     "ElasticNetRegressionModel",
     "EncryptionScheme",
     "Environment",
+    "GaussianAttack",
     "GaussianDPEncryption",
     "GeometricMedianAggregation",
     "HuberRegressionModel",
+    "IPMAttack",
     "KrumAggregation",
     "LaplaceDPEncryption",
     "LassoRegressionModel",
@@ -71,6 +85,7 @@ __all__ = [
     "MedianAggregation",
     "MedianOfMeansAggregation",
     "Model",
+    "NoAttack",
     "NoEncryption",
     "Orchestrator",
     "PairwiseMaskingEncryption",
@@ -79,7 +94,12 @@ __all__ = [
     "PrivacyUtilityVisualizer",
     "RidgeRegressionModel",
     "SVMModel",
+    "SignFlipAttack",
     "TrainingHistoryVisualizer",
     "TrimmedMeanAggregation",
     "Visualizer",
+    "dirichlet_partition",
+    "generate_linear_data",
+    "run_benchmark",
+    "split_data",
 ]

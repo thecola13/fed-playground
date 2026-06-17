@@ -16,6 +16,7 @@ from .aggregation import AggregationStrategy
 from .encryption import EncryptionScheme
 
 if TYPE_CHECKING:
+    from .attacks import Attack
     from .party import Party
 
 logger = logging.getLogger(__name__)
@@ -45,11 +46,15 @@ class Orchestrator:
         aggregation_strategy: AggregationStrategy,
         encryption_scheme: EncryptionScheme,
         initial_model_params: np.ndarray | None = None,
+        attack: Attack | None = None,
+        byzantine_ids: list[int] | None = None,
     ) -> None:
         self.aggregation_strategy = aggregation_strategy
         self.encryption_scheme = encryption_scheme
         self.global_model_params: np.ndarray | None = initial_model_params
         self.parties: list[Party] = []
+        self.attack = attack
+        self.byzantine_ids = byzantine_ids or []
 
     def register_party(self, party: Party) -> None:
         """Add a party to the list of participants.
@@ -87,6 +92,8 @@ class Orchestrator:
             raise RuntimeError("No parties registered; cannot aggregate.")
 
         encrypted_models = [party.get_encrypted_model() for party in self.parties]
+        if self.attack is not None and self.byzantine_ids:
+            encrypted_models = self.attack.corrupt(encrypted_models, self.byzantine_ids)
         self.global_model_params = self.aggregation_strategy.aggregate(
             encrypted_models, self.encryption_scheme
         )
