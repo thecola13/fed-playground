@@ -1,70 +1,109 @@
+"""Federated learning party (client) implementation.
+
+A :class:`Party` holds a private local dataset, owns a local model, and
+participates in each federated round by training locally and returning
+(possibly encrypted) parameter updates to the orchestrator.
+"""
+
+import logging
 from typing import Any
+
 import numpy as np
-from .models import Model
+
 from .encryption import EncryptionScheme
+from .models import Model
+
+logger = logging.getLogger(__name__)
+
 
 class Party:
+    """A single participant in the federated learning protocol.
+
+    Each party holds private data that is never shared directly.  In every
+    round it:
+
+    1. Receives the global model from the :class:`~fed_playground.src.orchestrator.Orchestrator`.
+    2. Fine-tunes that model on its local data.
+    3. Returns (optionally encrypted) parameter updates.
+
+    Args:
+        party_id: Unique integer identifier for this party.
+        model: Initialised :class:`~fed_playground.src.models.Model` instance.
+        data: Tuple ``(X_train, y_train)`` of local training data.
+        encryption_scheme: Scheme used to encrypt outgoing parameters.
     """
-    Represents a participant in the federated learning process.
-    """
+
     def __init__(
-        self, 
-        party_id: int, 
-        model: Model, 
-        data: tuple[np.ndarray, np.ndarray], 
-        encryption_scheme: EncryptionScheme
-    ):
+        self,
+        party_id: int,
+        model: Model,
+        data: tuple[np.ndarray, np.ndarray],
+        encryption_scheme: EncryptionScheme,
+    ) -> None:
         self.party_id = party_id
         self.model = model
         self.X_train, self.y_train = data
         self.encryption_scheme = encryption_scheme
 
     def train_local_model(self) -> None:
-        """
-        Trains the local model on private data.
-        """
+        """Train the local model on this party's private data."""
         self.model.train(self.X_train, self.y_train)
 
     def get_encrypted_model(self) -> Any:
-        """
-        Returns the encrypted model parameters.
+        """Return the current model parameters, encrypted by the active scheme.
+
+        Returns:
+            Encrypted (or plaintext for :class:`~fed_playground.src.encryption.NoEncryption`)
+            parameter vector.
         """
         params = self.model.get_parameters()
         return self.encryption_scheme.encrypt(params)
 
-    def update_model(self, global_model_params: np.ndarray) -> None:
+    def update_model(self, global_model_params: Any) -> None:
+        """Update the local model with new global parameters.
+
+        If the incoming parameters are encrypted (e.g. the orchestrator
+        forwarded an encrypted global model), they are decrypted first using
+        this party's encryption scheme.
+
+        Args:
+            global_model_params: Parameters as received from the orchestrator —
+                may be a plaintext numpy array or an encrypted object depending
+                on the protocol.
+
+        Raises:
+            TypeError: If decryption succeeds but the result cannot be passed
+                to :meth:`~fed_playground.src.models.Model.set_parameters`.
         """
-        Updates the local model with the global model parameters.
-        Note: The global model parameters are expected to be decrypted (plaintext).
-        In a real FHE setting, the party might receive an encrypted model and decrypt it,
-        or the Orchestrator might have facilitated decryption (e.g., via MPC).
-        Here we assume the Orchestrator sends back a plaintext model for simplicity/playground purposes,
-        OR the party decrypts it if it was sent encrypted.
-        
-        For this interface, let's assume 'global_model_params' is what the party receives.
-        If it's encrypted, we decrypt it.
-        """
-        # Check if the params are seemingly encrypted (this check is scheme dependent)
-        # For our NoEncryption, they are just arrays. 
-        # For this playground, let's explicitely use the scheme to decrypt if needed.
-        # But usually Orchestrator sends back the aggregated result which might need decryption.
-        
-        # We will assume the input here is capable of being processed by 'decrypt' or set directly.
-        # However, to be robust: let's try to decrypt. If the scheme says "I can't decrypt this" or it's already plain...
-        # Actually, let's assume the interface `update_model` receives the result from the Orchestrator.
-        # We invoke our scheme's decrypt.
         try:
             params = self.encryption_scheme.decrypt(global_model_params)
-        except Exception:
-            # Fallback or assume it was already plaintext if the scheme allows
+        except (TypeError, ValueError, AttributeError) as exc:
+            # The scheme reported that these parameters are already plaintext
+            # or decryption is not applicable.  Trust the incoming value.
+            logger.debug(
+                "Party %d: decrypt raised %s — treating params as plaintext.",
+                self.party_id,
+                type(exc).__name__,
+            )
             params = global_model_params
-            
+
         self.model.set_parameters(params)
 
-    def evaluate(self, X: np.ndarray = None, y: np.ndarray = None) -> float:
-        """
-        Evaluates the model.
-        If no data is provided, evaluates on local training data.
+    def evaluate(
+        self,
+        X: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+    ) -> float:
+        """Evaluate the local model and return MSE.
+
+        Args:
+            X: Feature matrix for evaluation.  When ``None`` the local
+                training data is used.
+            y: Target vector for evaluation.  When ``None`` the local
+                training target is used.
+
+        Returns:
+            Mean Squared Error on the provided (or local training) data.
         """
         if X is None or y is None:
             X, y = self.X_train, self.y_train
