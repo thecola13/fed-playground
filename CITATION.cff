@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 title: >-
-  fed-env: a modular pure-NumPy federated learning
+  fedbench: a modular pure-NumPy federated learning
   simulation and benchmark framework
 message: >-
   If you use this software in your research, please cite it
   using the metadata from this file.
 type: software
 authors:
-  - name: fed-env contributors
+  - name: fedbench contributors
 repository-code: "https://github.com/thecola13/fedbench"
 abstract: >-
   A dependency-light, pure-NumPy federated learning testbed

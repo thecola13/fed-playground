@@ -3,12 +3,12 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fed-env"
+name = "fedbench"
 version = "0.2.0"
 description = "A modular, pure-NumPy federated learning simulation and benchmark framework for research and education"
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [{ name = "fed-env contributors" }]
+authors = [{ name = "fedbench contributors" }]
 requires-python = ">=3.11,<3.13"
 keywords = [
     "federated-learning",

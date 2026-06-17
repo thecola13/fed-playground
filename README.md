@@ -1,4 +1,4 @@
-# fed-env
+# fedbench
 
 > A modular federated learning simulation framework for research and education.
 
@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](pyproject.toml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue)](https://thecola13.github.io/fedbench/)
+[![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue)](https://fedbench.colaciluca.it/)
 
 
 ## Table of Contents
@@ -26,7 +26,7 @@
 
 ## Overview
 
-**fed-env** is a pure-Python federated learning playground designed to make it
+**fedbench** is a pure-Python federated learning playground designed to make it
 easy to prototype, analyse, and teach the core ideas behind federated learning
 (FL) — without requiring a cluster or real network infrastructure.
 
@@ -164,7 +164,7 @@ the Python version and virtual environment automatically.
 ```bash
 # 1. Clone the repository
 git clone https://github.com/thecola13/fedbench.git
-cd fed-env
+cd fedbench
 
 # 2. Install dependencies and create the virtual environment
 uv sync
@@ -196,7 +196,7 @@ pytest
 ```bash
 # 1. Clone the repository
 git clone https://github.com/thecola13/fedbench.git
-cd fed-env
+cd fedbench
 
 # 2. Create and activate a virtual environment
 python3.11 -m venv .venv
@@ -215,7 +215,7 @@ pip install -e ".[fhe]"
 Verify the installation:
 
 ```bash
-python -c "import fed_playground; print('fed-env installed successfully')"
+python -c "import fed_playground; print('fedbench installed successfully')"
 ```
 
 ---
@@ -396,7 +396,7 @@ tests/test_utils_data.py     .......
 
 ```bash
 git clone https://github.com/thecola13/fedbench.git
-cd fed-env
+cd fedbench
 uv sync --extra dev
 ```
 

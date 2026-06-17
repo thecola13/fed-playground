@@ -1,4 +1,4 @@
-# fed-env
+# fedbench
 
 A modular, **pure-NumPy** federated learning simulation and benchmark framework
 for research and education. Swap any
@@ -10,7 +10,7 @@ privacy / robustness / utility trade-off — no cluster, no heavy deps.
 ```bash
 uv sync                 # core
 uv sync --extra examples  # + scikit-learn, tqdm (some demos / datasets)
-pip install fed-env      # once released
+pip install fedbench      # once released
 ```
 
 ## 30-second tour

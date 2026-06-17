@@ -1,7 +1,7 @@
 name: Release
 
 # Publish to PyPI on a version tag (e.g. v0.2.0) via Trusted Publishing.
-# One-time setup: add fed-env as a trusted publisher on PyPI for this repo.
+# One-time setup: add fedbench as a trusted publisher on PyPI for this repo.
 on:
   push:
     tags: ["v*"]
