@@ -84,7 +84,8 @@ run is identical and `seed` in a config would be a lie.
   results_csv    = "benchmarks/results/robustness.csv"
   leaderboard_md = "benchmarks/RESULTS.md"
   ```
-- Tests: `resolve` happy-path + unknown-name error; `load_config` round-trip
+- Tests: `_lookup` happy-path + unknown-name error; `build_grid` resolves the
+  `models` axis to a class and the others to instances; `load_config` round-trip
   on a fixture TOML; `Environment(seed=1)` vs `seed=2` produce different data.
 
 ### Chunk B — `fedbench` CLI  (`fed_playground/src/cli.py`)
