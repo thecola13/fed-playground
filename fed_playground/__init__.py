@@ -16,12 +16,14 @@ from .src.encryption import (
 from .src.environment import Environment
 from .src.models import (
     ClosedFormLinearRegressionModel,
+    LassoRegressionModel,
     LinearRegressionModel,
     LogisticRegressionModel,
     MLPClassifierModel,
     MLPRegressorModel,
     Model,
     RidgeRegressionModel,
+    SVMModel,
 )
 from .src.orchestrator import Orchestrator
 from .src.party import Party
@@ -46,6 +48,7 @@ __all__ = [
     "GaussianDPEncryption",
     "GeometricMedianAggregation",
     "KrumAggregation",
+    "LassoRegressionModel",
     "LinearRegressionModel",
     "LogisticRegressionModel",
     "MLPClassifierModel",
@@ -57,6 +60,7 @@ __all__ = [
     "Orchestrator",
     "Party",
     "RidgeRegressionModel",
+    "SVMModel",
     "TrainingHistoryVisualizer",
     "TrimmedMeanAggregation",
     "Visualizer",

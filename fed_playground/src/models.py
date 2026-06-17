@@ -56,9 +56,11 @@ class Model(abc.ABC):
             Predicted values of shape ``(n_samples,)``.
         """
 
-    @abc.abstractmethod
     def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
-        """Compute a scalar evaluation metric (MSE by default).
+        """Compute Mean Squared Error on the provided data.
+
+        This is the default metric for regression models.  Classification
+        models override it to return accuracy instead.
 
         Args:
             X: Feature matrix of shape ``(n_samples, n_features)``.
@@ -68,8 +70,12 @@ class Model(abc.ABC):
             Mean Squared Error on the provided data.
 
         Raises:
-            ValueError: If *X* or *y* contain zero samples.
+            ValueError: If *X* contains zero samples.
         """
+        if X.shape[0] == 0:
+            raise ValueError("Cannot evaluate on an empty dataset.")
+        y_pred = self.predict(X)
+        return float(np.mean((y - y_pred) ** 2))
 
 
 class LinearRegressionModel(Model):
@@ -145,24 +151,6 @@ class LinearRegressionModel(Model):
         """
         return np.dot(X, self.weights) + self.bias
 
-    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
-        """Compute Mean Squared Error on the provided data.
-
-        Args:
-            X: Feature matrix of shape ``(n_samples, n_features)``.
-            y: True target values of shape ``(n_samples,)``.
-
-        Returns:
-            MSE scalar.
-
-        Raises:
-            ValueError: If *X* contains zero samples.
-        """
-        if X.shape[0] == 0:
-            raise ValueError("Cannot evaluate on an empty dataset.")
-        y_pred = self.predict(X)
-        return float(np.mean((y - y_pred) ** 2))
-
 
 class RidgeRegressionModel(Model):
     """L2-regularised linear regression via the closed-form ridge solution.
@@ -220,23 +208,6 @@ class RidgeRegressionModel(Model):
         """
         X_b = np.hstack([X, np.ones((X.shape[0], 1))])
         return X_b @ self.params
-
-    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
-        """Compute MSE on the provided data.
-
-        Args:
-            X: Feature matrix of shape ``(n_samples, n_features)``.
-            y: True target values of shape ``(n_samples,)``.
-
-        Returns:
-            MSE scalar.
-
-        Raises:
-            ValueError: If *X* contains zero samples.
-        """
-        if X.shape[0] == 0:
-            raise ValueError("Cannot evaluate on an empty dataset.")
-        return float(np.mean((y - self.predict(X)) ** 2))
 
 
 class LogisticRegressionModel(Model):
@@ -450,23 +421,6 @@ class MLPRegressorModel(Model):
         """
         _, _, out = self._forward(X)
         return out
-
-    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
-        """Compute MSE on the provided data.
-
-        Args:
-            X: Feature matrix of shape ``(n_samples, n_features)``.
-            y: True target values of shape ``(n_samples,)``.
-
-        Returns:
-            MSE scalar.
-
-        Raises:
-            ValueError: If *X* contains zero samples.
-        """
-        if X.shape[0] == 0:
-            raise ValueError("Cannot evaluate on an empty dataset.")
-        return float(np.mean((y - self.predict(X)) ** 2))
 
 
 class MLPClassifierModel(Model):
@@ -685,20 +639,213 @@ class ClosedFormLinearRegressionModel(Model):
         """
         return np.dot(self._add_bias_term(X), self.params)
 
-    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
-        """Compute Mean Squared Error on the provided data.
+
+class SVMModel(Model):
+    """Linear support vector machine trained with the Pegasos algorithm.
+
+    Reference: Shalev-Shwartz, Singer, Srebro & Cotter, "Pegasos: Primal
+    Estimated sub-GrAdient SOlver for SVM", Mathematical Programming 2011.
+
+    Minimises the L2-regularised hinge loss
+    ``(λ/2)‖w‖² + (1/n) Σ max(0, 1 - yᵢ(w·xᵢ + b))`` by stochastic sub-gradient
+    descent with the Pegasos step size ``η_t = 1/(λt)``.  Binary labels are
+    supplied in ``{0, 1}`` and mapped internally to ``{-1, +1}``; the bias term
+    is left unregularised.  :meth:`evaluate` returns **accuracy**.
+
+    Parameters are stored as ``[weights..., bias]``.
+
+    Args:
+        input_dim: Number of input features.
+        lambda_reg: Regularisation strength ``λ`` (default ``0.01``).
+        epochs: Passes over the local data per :meth:`train` call (default ``20``).
+        seed: RNG seed for the sample order (default ``0``).
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        lambda_reg: float = 0.01,
+        epochs: int = 20,
+        seed: int = 0,
+    ) -> None:
+        if lambda_reg <= 0:
+            raise ValueError("lambda_reg must be > 0.")
+        self.input_dim = input_dim
+        self.lambda_reg = lambda_reg
+        self.epochs = epochs
+        self.seed = seed
+        self.weights: np.ndarray = np.zeros(input_dim)
+        self.bias: float = 0.0
+        self._t = 0  # global Pegasos step counter (persists across rounds)
+
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """Run Pegasos sub-gradient updates over the local data.
 
         Args:
             X: Feature matrix of shape ``(n_samples, n_features)``.
-            y: True target values of shape ``(n_samples,)``.
+            y: Binary labels of shape ``(n_samples,)`` with values in {0, 1}.
+        """
+        n = X.shape[0]
+        if n == 0:
+            return
+        y_pm = np.where(y > 0.5, 1.0, -1.0)  # {0,1} -> {-1,+1}
+        rng = np.random.default_rng(self.seed + self._t)
+        for _ in range(self.epochs):
+            for i in rng.permutation(n):
+                self._t += 1
+                eta = 1.0 / (self.lambda_reg * self._t)
+                margin = y_pm[i] * (self.weights @ X[i] + self.bias)
+                self.weights *= 1.0 - eta * self.lambda_reg
+                if margin < 1.0:
+                    self.weights += eta * y_pm[i] * X[i]
+                    self.bias += eta * y_pm[i]
+
+    def get_parameters(self) -> np.ndarray:
+        """Return ``[weights..., bias]`` as a flat array."""
+        return np.concatenate([self.weights, [self.bias]])
+
+    def set_parameters(self, params: np.ndarray) -> None:
+        """Load weights and bias from a flat parameter array.
+
+        Args:
+            params: 1-D array of length ``input_dim + 1``.
+        """
+        self.weights = params[:-1].copy()
+        self.bias = float(params[-1])
+
+    def decision_function(self, X: np.ndarray) -> np.ndarray:
+        """Return the signed distance ``w·x + b`` to the separating hyperplane.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
 
         Returns:
-            MSE scalar.
+            Real-valued scores of shape ``(n_samples,)``.
+        """
+        return X @ self.weights + self.bias
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Return hard binary predictions in ``{0, 1}``.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
+
+        Returns:
+            Binary predictions of shape ``(n_samples,)``.
+        """
+        return (self.decision_function(X) >= 0.0).astype(float)
+
+    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
+        """Compute classification accuracy.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
+            y: True binary labels of shape ``(n_samples,)``.
+
+        Returns:
+            Accuracy in ``[0, 1]``.
 
         Raises:
             ValueError: If *X* contains zero samples.
         """
         if X.shape[0] == 0:
             raise ValueError("Cannot evaluate on an empty dataset.")
-        y_pred = self.predict(X)
-        return float(np.mean((y - y_pred) ** 2))
+        return float(np.mean(self.predict(X) == y))
+
+
+class LassoRegressionModel(Model):
+    """L1-regularised linear regression (LASSO) via cyclic coordinate descent.
+
+    References: Tibshirani, "Regression Shrinkage and Selection via the Lasso",
+    JRSS-B 1996; Friedman, Hastie & Tibshirani, "Regularization Paths for
+    Generalized Linear Models via Coordinate Descent", J. Stat. Soft. 2010.
+
+    Minimises ``(1/2n)‖y - Xw - b‖² + α‖w‖₁`` with cyclic coordinate descent and
+    soft-thresholding ``S(ρ, α) = sign(ρ)·max(|ρ| - α, 0)``.  The L1 penalty
+    drives weights of irrelevant features to *exactly* zero, yielding a sparse,
+    feature-selecting model.  The intercept is not penalised.
+
+    Parameters are stored as ``[weights..., bias]``.
+
+    Args:
+        input_dim: Number of input features.
+        alpha: L1 regularisation strength (default ``0.1``).
+        max_iter: Maximum coordinate-descent sweeps per :meth:`train` (default ``1000``).
+        tol: Convergence tolerance on the max coefficient change (default ``1e-6``).
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        alpha: float = 0.1,
+        max_iter: int = 1000,
+        tol: float = 1e-6,
+    ) -> None:
+        if alpha < 0:
+            raise ValueError("alpha must be >= 0.")
+        self.input_dim = input_dim
+        self.alpha = alpha
+        self.max_iter = max_iter
+        self.tol = tol
+        self.weights: np.ndarray = np.zeros(input_dim)
+        self.bias: float = 0.0
+
+    @staticmethod
+    def _soft_threshold(rho: float, gamma: float) -> float:
+        """Soft-thresholding operator ``S(rho, gamma)``."""
+        if rho > gamma:
+            return rho - gamma
+        if rho < -gamma:
+            return rho + gamma
+        return 0.0
+
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """Fit by cyclic coordinate descent with soft-thresholding.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
+            y: Target vector of shape ``(n_samples,)``.
+        """
+        n = X.shape[0]
+        if n == 0:
+            return
+        # Per-feature normalisation z_j = (1/n) Σ x_ij²; constant features stay 0.
+        col_sq = (X * X).sum(axis=0) / n
+        for _ in range(self.max_iter):
+            max_change = 0.0
+            self.bias = float(np.mean(y - X @ self.weights))
+            for j in range(self.input_dim):
+                if col_sq[j] == 0.0:
+                    continue
+                # Partial residual excluding feature j's current contribution.
+                r_j = y - self.bias - X @ self.weights + self.weights[j] * X[:, j]
+                rho_j = float(X[:, j] @ r_j) / n
+                new_wj = self._soft_threshold(rho_j, self.alpha) / col_sq[j]
+                max_change = max(max_change, abs(new_wj - self.weights[j]))
+                self.weights[j] = new_wj
+            if max_change < self.tol:
+                break
+
+    def get_parameters(self) -> np.ndarray:
+        """Return ``[weights..., bias]`` as a flat array."""
+        return np.concatenate([self.weights, [self.bias]])
+
+    def set_parameters(self, params: np.ndarray) -> None:
+        """Load weights and bias from a flat parameter array.
+
+        Args:
+            params: 1-D array of length ``input_dim + 1``.
+        """
+        self.weights = params[:-1].copy()
+        self.bias = float(params[-1])
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Compute linear predictions ``X·weights + bias``.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
+
+        Returns:
+            Predicted values of shape ``(n_samples,)``.
+        """
+        return X @ self.weights + self.bias
