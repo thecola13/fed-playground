@@ -427,6 +427,7 @@ class DivergenceVisualizer(Visualizer):
 
         return series
 
+
 class PrivacyUtilityVisualizer(Visualizer):
     """Plot the privacy/utility trade-off curve for differentially-private FL.
 

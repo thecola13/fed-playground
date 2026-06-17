@@ -65,23 +65,25 @@ class TestKrumAggregation:
 
     def test_selects_honest_update_over_outlier(self):
         honest, outlier = _clustered_with_outlier()
-        result = KrumAggregation(n_byzantine=1).aggregate(honest + [outlier], self.scheme)
+        result = KrumAggregation(n_byzantine=1).aggregate(
+            [*honest, outlier], self.scheme
+        )
         # Krum must pick an update inside the honest cluster, never the outlier.
         assert np.linalg.norm(result - np.array([1.0, 1.0])) < 0.5
         assert not np.allclose(result, outlier)
 
     def test_mean_is_dragged_by_outlier_but_krum_is_not(self):
         honest, outlier = _clustered_with_outlier()
-        updates = honest + [outlier]
+        updates = [*honest, outlier]
         mean = MeanAggregation().aggregate(updates, self.scheme)
         krum = KrumAggregation(n_byzantine=1).aggregate(updates, self.scheme)
         assert np.linalg.norm(mean - np.array([1.0, 1.0])) > 10.0  # mean corrupted
-        assert np.linalg.norm(krum - np.array([1.0, 1.0])) < 0.5   # krum robust
+        assert np.linalg.norm(krum - np.array([1.0, 1.0])) < 0.5  # krum robust
 
     def test_multi_krum_averages_selected(self):
         honest, outlier = _clustered_with_outlier()
         result = KrumAggregation(n_byzantine=1, n_selected=3).aggregate(
-            honest + [outlier], self.scheme
+            [*honest, outlier], self.scheme
         )
         assert np.linalg.norm(result - np.array([1.0, 1.0])) < 0.5
 
@@ -107,7 +109,7 @@ class TestGeometricMedianAggregation:
 
     def test_robust_to_outlier(self):
         honest, outlier = _clustered_with_outlier()
-        result = GeometricMedianAggregation().aggregate(honest + [outlier], self.scheme)
+        result = GeometricMedianAggregation().aggregate([*honest, outlier], self.scheme)
         assert np.linalg.norm(result - np.array([1.0, 1.0])) < 0.5
 
     def test_identical_updates_return_that_point(self):
@@ -117,8 +119,12 @@ class TestGeometricMedianAggregation:
 
     def test_matches_mean_for_symmetric_cloud(self):
         # For a symmetric configuration the geometric median equals the centroid.
-        pts = [np.array([1.0, 0.0]), np.array([-1.0, 0.0]),
-               np.array([0.0, 1.0]), np.array([0.0, -1.0])]
+        pts = [
+            np.array([1.0, 0.0]),
+            np.array([-1.0, 0.0]),
+            np.array([0.0, 1.0]),
+            np.array([0.0, -1.0]),
+        ]
         result = GeometricMedianAggregation().aggregate(pts, self.scheme)
         np.testing.assert_array_almost_equal(result, np.zeros(2), decimal=4)
 
@@ -139,7 +145,9 @@ class TestBulyanAggregation:
 
     def test_robust_to_single_outlier(self):
         honest, outlier = _clustered_with_outlier()
-        result = BulyanAggregation(n_byzantine=1).aggregate(honest + [outlier], self.scheme)
+        result = BulyanAggregation(n_byzantine=1).aggregate(
+            [*honest, outlier], self.scheme
+        )
         assert np.linalg.norm(result - np.array([1.0, 1.0])) < 0.5
 
     def test_robust_to_two_outliers(self):
@@ -168,13 +176,15 @@ class TestMedianOfMeansAggregation:
     def test_robust_to_outlier(self):
         honest, outlier = _clustered_with_outlier()
         result = MedianOfMeansAggregation(n_buckets=5).aggregate(
-            honest + [outlier], self.scheme
+            [*honest, outlier], self.scheme
         )
         assert np.linalg.norm(result - np.array([1.0, 1.0])) < 0.6
 
     def test_identical_updates_return_that_point(self):
         p = np.array([3.0, -1.0, 4.0])
-        result = MedianOfMeansAggregation(n_buckets=3).aggregate([p, p, p, p], self.scheme)
+        result = MedianOfMeansAggregation(n_buckets=3).aggregate(
+            [p, p, p, p], self.scheme
+        )
         np.testing.assert_array_almost_equal(result, p)
 
     def test_buckets_clamped_to_party_count(self):
@@ -201,7 +211,7 @@ class TestCenteredClippingAggregation:
     def test_robust_to_outlier(self):
         honest, outlier = _clustered_with_outlier()
         result = CenteredClippingAggregation(clip_radius=1.0, n_iters=5).aggregate(
-            honest + [outlier], self.scheme
+            [*honest, outlier], self.scheme
         )
         assert np.linalg.norm(result - np.array([1.0, 1.0])) < 0.5
 

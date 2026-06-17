@@ -61,7 +61,9 @@ class TestSVMModel:
 
 class TestLassoRegressionModel:
     def test_recovers_ols_when_alpha_near_zero(self):
-        X, y = generate_linear_data(n_samples=200, n_features=4, noise=0.01, random_seed=0)
+        X, y = generate_linear_data(
+            n_samples=200, n_features=4, noise=0.01, random_seed=0
+        )
         lasso = LassoRegressionModel(input_dim=4, alpha=1e-6)
         lasso.train(X, y)
         ols = ClosedFormLinearRegressionModel(input_dim=4)
@@ -78,8 +80,8 @@ class TestLassoRegressionModel:
         lasso.train(X, y)
         relevant = np.abs(lasso.weights[:2])
         irrelevant = np.abs(lasso.weights[2:])
-        assert np.all(relevant > 0.5)          # signal kept
-        assert np.all(irrelevant < 1e-8)       # noise features driven to exact zero
+        assert np.all(relevant > 0.5)  # signal kept
+        assert np.all(irrelevant < 1e-8)  # noise features driven to exact zero
 
     def test_large_alpha_zeros_all_weights(self):
         X, y = generate_linear_data(n_samples=100, n_features=4, random_seed=1)
@@ -87,7 +89,9 @@ class TestLassoRegressionModel:
         lasso.train(X, y)
         np.testing.assert_array_almost_equal(lasso.weights, np.zeros(4))
         # With all weights zero the prediction collapses to the intercept ≈ mean(y).
-        np.testing.assert_allclose(lasso.predict(X), np.full(len(y), np.mean(y)), atol=1e-6)
+        np.testing.assert_allclose(
+            lasso.predict(X), np.full(len(y), np.mean(y)), atol=1e-6
+        )
 
     def test_empty_train_no_crash(self):
         LassoRegressionModel(input_dim=3).train(np.zeros((0, 3)), np.zeros(0))
@@ -101,7 +105,9 @@ class TestElasticNetRegressionModel:
         return X, y
 
     def test_recovers_ols_when_alpha_near_zero(self):
-        X, y = generate_linear_data(n_samples=200, n_features=4, noise=0.01, random_seed=0)
+        X, y = generate_linear_data(
+            n_samples=200, n_features=4, noise=0.01, random_seed=0
+        )
         en = ElasticNetRegressionModel(input_dim=4, alpha=1e-6, l1_ratio=0.5)
         en.train(X, y)
         ols = ClosedFormLinearRegressionModel(input_dim=4)
@@ -152,7 +158,9 @@ class TestPoissonRegressionModel:
 
     def test_recovers_rate_on_synthetic_counts(self):
         X, y = self._count_data(n=2000, seed=2)
-        model = PoissonRegressionModel(input_dim=X.shape[1], learning_rate=0.05, epochs=500)
+        model = PoissonRegressionModel(
+            input_dim=X.shape[1], learning_rate=0.05, epochs=500
+        )
         model.train(X, y)
         # Fitted mean rate should track the empirical mean count.
         assert abs(model.predict(X).mean() - y.mean()) < 0.1
@@ -171,7 +179,9 @@ class TestPoissonRegressionModel:
 
 class TestHuberRegressionModel:
     def _data_with_outliers(self, seed=0):
-        X, y = generate_linear_data(n_samples=200, n_features=3, noise=0.05, random_seed=seed)
+        X, y = generate_linear_data(
+            n_samples=200, n_features=3, noise=0.05, random_seed=seed
+        )
         y_corrupt = y.copy()
         rng = np.random.default_rng(seed)
         idx = rng.choice(len(y), size=20, replace=False)  # 10% gross outliers
@@ -180,7 +190,9 @@ class TestHuberRegressionModel:
 
     def test_more_robust_than_ols_under_target_outliers(self):
         X, y_clean, y_corrupt = self._data_with_outliers()
-        huber = HuberRegressionModel(input_dim=3, delta=1.0, learning_rate=0.05, epochs=300)
+        huber = HuberRegressionModel(
+            input_dim=3, delta=1.0, learning_rate=0.05, epochs=300
+        )
         huber.train(X, y_corrupt)
         ols = ClosedFormLinearRegressionModel(input_dim=3)
         ols.train(X, y_corrupt)
@@ -190,8 +202,12 @@ class TestHuberRegressionModel:
         assert huber_err < ols_err
 
     def test_recovers_ols_without_outliers(self):
-        X, y = generate_linear_data(n_samples=200, n_features=3, noise=0.01, random_seed=1)
-        huber = HuberRegressionModel(input_dim=3, delta=5.0, learning_rate=0.05, epochs=500)
+        X, y = generate_linear_data(
+            n_samples=200, n_features=3, noise=0.01, random_seed=1
+        )
+        huber = HuberRegressionModel(
+            input_dim=3, delta=5.0, learning_rate=0.05, epochs=500
+        )
         huber.train(X, y)
         assert np.mean((huber.predict(X) - y) ** 2) < 0.05
 
@@ -209,6 +225,7 @@ class TestHuberRegressionModel:
 
     def test_empty_train_no_crash(self):
         HuberRegressionModel(input_dim=3).train(np.zeros((0, 3)), np.zeros(0))
+
 
 # ---------------------------------------------------------------------------
 # Shared helpers

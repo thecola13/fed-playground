@@ -351,12 +351,10 @@ class MLPRegressorModel(Model):
         self.W2: np.ndarray = rng.normal(0, 0.01, hidden_dim)
         self.b2: float = 0.0
 
-    def _forward(
-        self, X: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _forward(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         h_pre = X @ self.W1 + self.b1  # (n, hidden_dim)
-        h = np.maximum(0.0, h_pre)      # ReLU
-        out = h @ self.W2 + self.b2     # (n,)
+        h = np.maximum(0.0, h_pre)  # ReLU
+        out = h @ self.W2 + self.b2  # (n,)
         return h_pre, h, out
 
     def train(self, X: np.ndarray, y: np.ndarray) -> None:
@@ -372,12 +370,12 @@ class MLPRegressorModel(Model):
         for _ in range(self.epochs):
             h_pre, h, out = self._forward(X)
             # MSE loss: L = mean((out - y)^2)
-            delta_out = (out - y) / n          # (n,)
-            dW2 = h.T @ delta_out              # (hidden_dim,)
+            delta_out = (out - y) / n  # (n,)
+            dW2 = h.T @ delta_out  # (hidden_dim,)
             db2 = float(np.sum(delta_out))
             delta_h = np.outer(delta_out, self.W2) * (h_pre > 0)  # (n, hidden_dim)
-            dW1 = X.T @ delta_h                # (input_dim, hidden_dim)
-            db1 = delta_h.sum(axis=0)          # (hidden_dim,)
+            dW1 = X.T @ delta_h  # (input_dim, hidden_dim)
+            db1 = delta_h.sum(axis=0)  # (hidden_dim,)
             self.W1 -= self.lr * dW1
             self.b1 -= self.lr * db1
             self.W2 -= self.lr * dW2
@@ -390,9 +388,7 @@ class MLPRegressorModel(Model):
             1-D numpy array of length
             ``input_dim × hidden_dim + hidden_dim + hidden_dim + 1``.
         """
-        return np.concatenate(
-            [self.W1.ravel(), self.b1, self.W2, [self.b2]]
-        )
+        return np.concatenate([self.W1.ravel(), self.b1, self.W2, [self.b2]])
 
     def set_parameters(self, params: np.ndarray) -> None:
         """Load all parameters from a flat array.
@@ -477,9 +473,7 @@ class MLPClassifierModel(Model):
         exp = np.exp(z_stable)
         return exp / exp.sum(axis=1, keepdims=True)
 
-    def _forward(
-        self, X: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _forward(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         h_pre = X @ self.W1 + self.b1
         h = np.maximum(0.0, h_pre)
         probs = self._softmax(h @ self.W2 + self.b2)
@@ -507,8 +501,8 @@ class MLPClassifierModel(Model):
                 Xb, Yb = X[idx], Y[idx]
                 nb = Xb.shape[0]
                 h_pre, h, probs = self._forward(Xb)
-                d_out = (probs - Yb) / nb           # (nb, n_classes)
-                dW2 = h.T @ d_out                   # (hidden_dim, n_classes)
+                d_out = (probs - Yb) / nb  # (nb, n_classes)
+                dW2 = h.T @ d_out  # (hidden_dim, n_classes)
                 db2 = d_out.sum(axis=0)
                 d_h = (d_out @ self.W2.T) * (h_pre > 0)  # ReLU mask
                 dW1 = Xb.T @ d_h
@@ -520,9 +514,7 @@ class MLPClassifierModel(Model):
 
     def get_parameters(self) -> np.ndarray:
         """Return all parameters as a single flat array."""
-        return np.concatenate(
-            [self.W1.ravel(), self.b1, self.W2.ravel(), self.b2]
-        )
+        return np.concatenate([self.W1.ravel(), self.b1, self.W2.ravel(), self.b2])
 
     def set_parameters(self, params: np.ndarray) -> None:
         """Load all parameters from a flat array.
@@ -997,7 +989,9 @@ class PoissonRegressionModel(Model):
 
     def _rate(self, X: np.ndarray) -> np.ndarray:
         """Expected count ``μ = exp(clip(w·x + b))``."""
-        eta = np.clip(X @ self.weights + self.bias, -self.max_exponent, self.max_exponent)
+        eta = np.clip(
+            X @ self.weights + self.bias, -self.max_exponent, self.max_exponent
+        )
         return np.exp(eta)
 
     def train(self, X: np.ndarray, y: np.ndarray) -> None:

@@ -397,9 +397,7 @@ class PairwiseMaskingEncryption(EncryptionScheme):
 
     is_linear_only = True
 
-    def __init__(
-        self, n_parties: int, mask_scale: float = 10.0, seed: int = 0
-    ) -> None:
+    def __init__(self, n_parties: int, mask_scale: float = 10.0, seed: int = 0) -> None:
         if n_parties < 1:
             raise ValueError("n_parties must be >= 1.")
         self.n_parties = n_parties
@@ -415,9 +413,7 @@ class PairwiseMaskingEncryption(EncryptionScheme):
         rng = np.random.default_rng([self.seed, round_idx, lo, hi])
         return rng.normal(0.0, self.mask_scale, size=shape)
 
-    def _party_mask(
-        self, round_idx: int, i: int, shape: tuple[int, ...]
-    ) -> np.ndarray:
+    def _party_mask(self, round_idx: int, i: int, shape: tuple[int, ...]) -> np.ndarray:
         """Total antisymmetric mask added by party ``i``; Σ_i = 0 by construction."""
         mask = np.zeros(shape)
         for j in range(self.n_parties):

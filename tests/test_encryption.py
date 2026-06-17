@@ -75,9 +75,7 @@ class TestAdditiveSecretSharing:
         # Two independent rounds must each reconstruct their own sum.
         for _ in range(2):
             shares = [self.scheme.encrypt(x) for x in self.updates]
-            np.testing.assert_allclose(
-                self.scheme.aggregate(shares), sum(self.updates)
-            )
+            np.testing.assert_allclose(self.scheme.aggregate(shares), sum(self.updates))
 
     def test_n_shares_above_two_still_reconstructs(self):
         scheme = AdditiveSecretSharing(n_shares=4, seed=1)
