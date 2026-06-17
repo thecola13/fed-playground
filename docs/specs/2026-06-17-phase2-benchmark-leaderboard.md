@@ -3,6 +3,12 @@
 Status: draft · Date: 2026-06-17 · Depends on: Phase 1 (`run_benchmark`, `Attack`,
 `dirichlet_partition`) which is merged and green (152 tests).
 
+> **Feasibility validated** (throwaway prototype, 2026-06-17): the full
+> `tomllib inline-table → getattr resolver → run_benchmark → hand-rolled
+> Markdown (NaN→"—")` path runs end-to-end and produces the expected attack ×
+> defense leaderboard. The only refinement it surfaced — models resolve to a
+> *class*, other axes to *instances* — is folded into Chunk A below.
+
 ## Context & goal
 
 Phase 1 gave us a programmatic benchmark engine (`run_benchmark(...)` → tidy
@@ -35,12 +41,17 @@ run is identical and `seed` in a config would be a lie.
   `generate_linear_data(..., random_seed=self.seed)` in `setup`. Add `seed` to
   `run_benchmark(...)` and forward it.
 - `config.py`:
-  - `resolve(name: str, **params)` → `getattr(fed_playground, name)(**params)` for
-    instances, or the class for models; raise a clear `ValueError` if
-    `name not in fed_playground.__all__`.
+  - `_lookup(name) -> object`: `getattr(fed_playground, name)`, raising a clear
+    `ValueError` if `name not in fed_playground.__all__`.
+  - Two resolution modes (the axes differ — validated by prototype):
+    `run_benchmark(models=...)` wants **classes**, `aggregations/encryptions/
+    attacks` want **instances**. So `build_grid` resolves the `models` axis to
+    the class (`_lookup(name)`) and the other axes to instances
+    (`_lookup(name)(**{k:v for k,v in entry.items() if k!="name"})`). No generic
+    "resolve" that has to guess.
   - `load_config(path) -> dict` via `tomllib`.
   - `build_grid(cfg) -> dict` → kwargs for `run_benchmark` (resolve every grid
-    entry; load the dataset, see Chunk D).
+    entry per the rule above; load the dataset, see Chunk D).
 - **TOML schema** (grid entries are TOML inline tables → `{name=..., **params}`):
   ```toml
   [experiment]
