@@ -8,6 +8,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue)](https://colaciluca.it/fed-playground/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20735432.svg)](https://doi.org/10.5281/zenodo.20735432)
 
 
 ## Table of Contents
@@ -428,6 +429,25 @@ docs(readme): add custom model example
 - [ ] `black --check .` reports no formatting issues
 - [ ] New public functions/classes have Google-style docstrings
 - [ ] New behaviour is covered by at least one test
+
+---
+
+## Citation
+
+If you use fed-playground in your research, please cite it via its archived
+release (see [`CITATION.cff`](CITATION.cff) for machine-readable metadata):
+
+```bibtex
+@software{fed_playground,
+  title   = {fed-playground: a modular pure-NumPy federated learning
+             simulation and benchmark framework},
+  author  = {{fed-playground contributors}},
+  year    = {2026},
+  version = {0.2.1},
+  doi     = {10.5281/zenodo.20735432},
+  url     = {https://github.com/thecola13/fed-playground}
+}
+```
 
 ---
 

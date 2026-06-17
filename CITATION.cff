@@ -28,4 +28,6 @@ keywords:
   - byzantine robustness
   - machine learning
 license: MIT
-version: 0.1.0
+version: 0.2.1
+doi: 10.5281/zenodo.20735432
+date-released: "2026-06-17"
