@@ -6,6 +6,7 @@ import pytest
 from fed_playground.src.models import (
     ClosedFormLinearRegressionModel,
     ElasticNetRegressionModel,
+    HuberRegressionModel,
     LassoRegressionModel,
     LinearRegressionModel,
     PoissonRegressionModel,
@@ -166,6 +167,48 @@ class TestPoissonRegressionModel:
 
     def test_empty_train_no_crash(self):
         PoissonRegressionModel(input_dim=3).train(np.zeros((0, 3)), np.zeros(0))
+
+
+class TestHuberRegressionModel:
+    def _data_with_outliers(self, seed=0):
+        X, y = generate_linear_data(n_samples=200, n_features=3, noise=0.05, random_seed=seed)
+        y_corrupt = y.copy()
+        rng = np.random.default_rng(seed)
+        idx = rng.choice(len(y), size=20, replace=False)  # 10% gross outliers
+        y_corrupt[idx] += 100.0
+        return X, y, y_corrupt
+
+    def test_more_robust_than_ols_under_target_outliers(self):
+        X, y_clean, y_corrupt = self._data_with_outliers()
+        huber = HuberRegressionModel(input_dim=3, delta=1.0, learning_rate=0.05, epochs=300)
+        huber.train(X, y_corrupt)
+        ols = ClosedFormLinearRegressionModel(input_dim=3)
+        ols.train(X, y_corrupt)
+        # Error measured against the CLEAN targets: Huber should track them better.
+        huber_err = np.mean((huber.predict(X) - y_clean) ** 2)
+        ols_err = np.mean((ols.predict(X) - y_clean) ** 2)
+        assert huber_err < ols_err
+
+    def test_recovers_ols_without_outliers(self):
+        X, y = generate_linear_data(n_samples=200, n_features=3, noise=0.01, random_seed=1)
+        huber = HuberRegressionModel(input_dim=3, delta=5.0, learning_rate=0.05, epochs=500)
+        huber.train(X, y)
+        assert np.mean((huber.predict(X) - y) ** 2) < 0.05
+
+    def test_parameter_roundtrip(self):
+        X, y = generate_linear_data(n_samples=100, n_features=3, random_seed=2)
+        model = HuberRegressionModel(input_dim=3)
+        model.train(X, y)
+        clone = HuberRegressionModel(input_dim=3)
+        clone.set_parameters(model.get_parameters())
+        np.testing.assert_array_almost_equal(clone.predict(X), model.predict(X))
+
+    def test_invalid_delta_raises(self):
+        with pytest.raises(ValueError, match="delta"):
+            HuberRegressionModel(input_dim=3, delta=0.0)
+
+    def test_empty_train_no_crash(self):
+        HuberRegressionModel(input_dim=3).train(np.zeros((0, 3)), np.zeros(0))
 
 # ---------------------------------------------------------------------------
 # Shared helpers

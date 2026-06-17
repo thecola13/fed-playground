@@ -21,6 +21,7 @@ from .src.environment import Environment
 from .src.models import (
     ClosedFormLinearRegressionModel,
     ElasticNetRegressionModel,
+    HuberRegressionModel,
     LassoRegressionModel,
     LinearRegressionModel,
     LogisticRegressionModel,
@@ -56,6 +57,7 @@ __all__ = [
     "Environment",
     "GaussianDPEncryption",
     "GeometricMedianAggregation",
+    "HuberRegressionModel",
     "KrumAggregation",
     "LaplaceDPEncryption",
     "LassoRegressionModel",

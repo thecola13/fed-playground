@@ -1064,3 +1064,90 @@ class PoissonRegressionModel(Model):
             term = np.where(y > 0, y * np.log(y / mu), 0.0)
         deviance = 2.0 * np.mean(term - (y - mu))
         return float(deviance)
+
+
+class HuberRegressionModel(Model):
+    """Robust linear regression with the Huber loss.
+
+    Reference: Huber, "Robust Estimation of a Location Parameter", Annals of
+    Mathematical Statistics 1964.
+
+    Minimises ``Σ L_δ(yᵢ - (w·xᵢ + b))`` where the Huber loss is quadratic for
+    small residuals and linear beyond a threshold ``δ``::
+
+        L_δ(r) = ½r²              if |r| ≤ δ
+               = δ(|r| - ½δ)      otherwise
+
+    The linear tail caps the influence of large residuals, so a few grossly
+    corrupted *target* values cannot dominate the fit the way they do under
+    ordinary least squares.  This is a robustness axis orthogonal to L1/L2
+    weight penalties (which regularise *coefficients*, not residuals).  Fitted
+    by gradient descent; the gradient w.r.t. each prediction is the clipped
+    residual ``clip(r, -δ, δ)``.
+
+    Parameters are stored as ``[weights..., bias]``.
+
+    Args:
+        input_dim: Number of input features.
+        delta: Huber threshold separating the quadratic and linear regimes
+            (default ``1.0``).
+        learning_rate: Gradient-descent step size (default ``0.01``).
+        epochs: Passes over the data per :meth:`train` call (default ``100``).
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        delta: float = 1.0,
+        learning_rate: float = 0.01,
+        epochs: int = 100,
+    ) -> None:
+        if delta <= 0:
+            raise ValueError("delta must be > 0.")
+        self.input_dim = input_dim
+        self.delta = delta
+        self.lr = learning_rate
+        self.epochs = epochs
+        self.weights: np.ndarray = np.zeros(input_dim)
+        self.bias: float = 0.0
+
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """Fit by gradient descent on the Huber loss.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
+            y: Target vector of shape ``(n_samples,)``.
+        """
+        n = X.shape[0]
+        if n == 0:
+            return
+        for _ in range(self.epochs):
+            r = y - (X @ self.weights + self.bias)
+            # d L_δ / d prediction = -clip(r, -δ, δ).
+            g = -np.clip(r, -self.delta, self.delta)
+            self.weights -= self.lr * (X.T @ g) / n
+            self.bias -= self.lr * float(np.sum(g)) / n
+
+    def get_parameters(self) -> np.ndarray:
+        """Return ``[weights..., bias]`` as a flat array."""
+        return np.concatenate([self.weights, [self.bias]])
+
+    def set_parameters(self, params: np.ndarray) -> None:
+        """Load weights and bias from a flat parameter array.
+
+        Args:
+            params: 1-D array of length ``input_dim + 1``.
+        """
+        self.weights = params[:-1].copy()
+        self.bias = float(params[-1])
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Compute linear predictions ``X·weights + bias``.
+
+        Args:
+            X: Feature matrix of shape ``(n_samples, n_features)``.
+
+        Returns:
+            Predicted values of shape ``(n_samples,)``.
+        """
+        return X @ self.weights + self.bias

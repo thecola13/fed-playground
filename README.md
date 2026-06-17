@@ -62,6 +62,7 @@ docstring:
 | Model | `LassoRegressionModel` | Tibshirani 1996; Friedman, Hastie & Tibshirani 2010 |
 | Model | `ElasticNetRegressionModel` | Zou & Hastie, *Elastic Net*, JRSS-B 2005 |
 | Model | `PoissonRegressionModel` | Nelder & Wedderburn, *GLMs*, JRSS-A 1972 |
+| Model | `HuberRegressionModel` | Huber, *Robust Estimation of a Location Parameter*, Ann. Math. Stat. 1964 |
 | Encryption | `LaplaceDPEncryption` | Dwork et al., *Calibrating Noise to Sensitivity*, TCC 2006 |
 | Encryption | `PairwiseMaskingEncryption` | Bonawitz et al., *Practical Secure Aggregation*, ACM CCS 2017 |
 | Visualizer | `PrivacyUtilityVisualizer` | Abadi et al., *Deep Learning with Differential Privacy*, ACM CCS 2016 |
