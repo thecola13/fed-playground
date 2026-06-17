@@ -1,0 +1,7 @@
+model,aggregation,encryption,attack,n_byzantine,final_loss,status
+LinearRegressionModel,MeanAggregation,NoEncryption,NoAttack,1,0.4385575527479862,ok
+LinearRegressionModel,MeanAggregation,NoEncryption,SignFlipAttack,1,2.949362829218065,ok
+LinearRegressionModel,MeanAggregation,GaussianDPEncryption,NoAttack,1,0.5597137925908217,ok
+LinearRegressionModel,MeanAggregation,GaussianDPEncryption,SignFlipAttack,1,3.135138800850154,ok
+LinearRegressionModel,MeanAggregation,LaplaceDPEncryption,NoAttack,1,4.94854989477742,ok
+LinearRegressionModel,MeanAggregation,LaplaceDPEncryption,SignFlipAttack,1,16.134787904880813,ok

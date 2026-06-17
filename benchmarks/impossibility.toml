@@ -1,0 +1,34 @@
+# The privacy x robustness impossibility: masking secure-aggregation
+# (is_linear_only) cannot be combined with order/distance Byzantine defenses.
+# Those cells come back NaN ("—") — you must choose one or the other.
+[experiment]
+name = "Privacy x Robustness frontier — final MSE; '—' = incompatible"
+n_parties = 6
+n_byzantine = [0]
+rounds = 5
+seed = 42
+
+[data]
+kind = "synthetic"
+n_samples = 600
+n_features = 4
+
+[grid]
+models = [{ name = "ClosedFormLinearRegressionModel" }]
+encryptions = [
+  { name = "NoEncryption" },
+  { name = "GaussianDPEncryption", sigma = 0.01, seed = 0 },
+  { name = "AdditiveSecretSharing", seed = 0 },
+  { name = "PairwiseMaskingEncryption", n_parties = 6 },
+]
+aggregations = [
+  { name = "MeanAggregation" },
+  { name = "MedianAggregation" },
+  { name = "KrumAggregation", n_byzantine = 1 },
+]
+
+[output]
+results_csv = "benchmarks/impossibility.csv"
+leaderboard_md = "benchmarks/impossibility.md"
+leaderboard_index = "encryption"
+leaderboard_columns = "aggregation"

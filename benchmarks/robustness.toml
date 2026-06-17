@@ -1,0 +1,37 @@
+# Byzantine robustness: aggregation defense x attack, under f=2 adversaries.
+[experiment]
+name = "Robustness — final global test MSE (lower is better)"
+n_parties = 11
+n_byzantine = [2]
+rounds = 8
+seed = 42
+
+[data]
+kind = "synthetic"
+n_samples = 900
+n_features = 5
+
+[grid]
+models = [{ name = "ClosedFormLinearRegressionModel" }]
+aggregations = [
+  { name = "MeanAggregation" },
+  { name = "MedianAggregation" },
+  { name = "TrimmedMeanAggregation", trim_fraction = 0.2 },
+  { name = "KrumAggregation", n_byzantine = 2 },
+  { name = "BulyanAggregation", n_byzantine = 2 },
+  { name = "GeometricMedianAggregation" },
+  { name = "MedianOfMeansAggregation", n_buckets = 5 },
+  { name = "CenteredClippingAggregation", clip_radius = 1.0, n_iters = 5 },
+]
+attacks = [
+  { name = "NoAttack" },
+  { name = "SignFlipAttack", scale = 10 },
+  { name = "IPMAttack", epsilon = 2.0 },
+  { name = "ALittleIsEnoughAttack", z = 3.0 },
+]
+
+[output]
+results_csv = "benchmarks/robustness.csv"
+leaderboard_md = "benchmarks/robustness.md"
+leaderboard_index = "aggregation"
+leaderboard_columns = "attack"

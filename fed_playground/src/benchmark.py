@@ -33,6 +33,7 @@ def run_benchmark(
     rounds: int = 10,
     n_features: int = 4,
     n_samples: int = 500,
+    seed: int = 42,
     model_params: dict[str, Any] | None = None,
     data_loader: DataLoader | None = None,
 ) -> pd.DataFrame:
@@ -88,6 +89,7 @@ def run_benchmark(
                 data_loader=data_loader,
                 attack=atk,
                 n_byzantine=nb,
+                seed=seed,
             )
             history = env.run_simulation(rounds=rounds)
             row["final_loss"] = history["global_loss"][-1]
@@ -98,3 +100,39 @@ def run_benchmark(
         rows.append(row)
 
     return pd.DataFrame(rows)
+
+
+def leaderboard(
+    df: pd.DataFrame,
+    *,
+    index: str = "aggregation",
+    columns: str = "attack",
+    values: str = "final_loss",
+    title: str = "",
+) -> str:
+    """Render a results DataFrame as a Markdown pivot table (no `tabulate`).
+
+    NaN cells (e.g. incompatible privacy x robustness combos) show as ``—``.
+    No timestamp is embedded, so the output is byte-stable under a fixed seed.
+
+    Args:
+        df: results from :func:`run_benchmark`.
+        index/columns/values: pivot axes; defaults give an attack x defense matrix.
+        title: optional heading rendered above the table.
+
+    Returns:
+        Markdown string.
+    """
+    matrix = df.pivot(index=index, columns=columns, values=values)
+    head = f"| {index} \\ {columns} | " + " | ".join(map(str, matrix.columns)) + " |"
+    sep = "|" + "---|" * (len(matrix.columns) + 1)
+    body = [
+        "| "
+        + str(i)
+        + " | "
+        + " | ".join("—" if pd.isna(v) else f"{v:.3f}" for v in matrix.loc[i])
+        + " |"
+        for i in matrix.index
+    ]
+    table = "\n".join([head, sep, *body])
+    return f"## {title}\n\n{table}\n" if title else table + "\n"

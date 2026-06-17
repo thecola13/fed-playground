@@ -1,7 +1,14 @@
 # Phase 2 Spec — Config-driven benchmarks, `fedbench` CLI, leaderboard, study
 
-Status: draft · Date: 2026-06-17 · Depends on: Phase 1 (`run_benchmark`, `Attack`,
-`dirichlet_partition`) which is merged and green (152 tests).
+Status: IMPLEMENTED (2026-06-17) · Depends on: Phase 1 (`run_benchmark`, `Attack`,
+`dirichlet_partition`).
+
+> Shipped as: `cli.py` (config+CLI, merged Chunks A/B), `leaderboard()` in
+> `benchmark.py` (Chunk C), `load_dataset` in `dataloader.py` (Chunk D),
+> `seed` on `Environment`/`run_benchmark` (Chunk A), and `benchmarks/`
+> configs + `STUDY.md` (Chunk E). Defaults taken: sklearn offline datasets,
+> hand-rolled markdown (no tabulate), `benchmarks/` at repo root. 161 tests green;
+> leaderboards reproduce byte-identically.
 
 > **Feasibility validated** (throwaway prototype, 2026-06-17): the full
 > `tomllib inline-table → getattr resolver → run_benchmark → hand-rolled

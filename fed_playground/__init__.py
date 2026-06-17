@@ -17,8 +17,8 @@ from .src.attacks import (
     NoAttack,
     SignFlipAttack,
 )
-from .src.benchmark import run_benchmark
-from .src.dataloader import DataLoader
+from .src.benchmark import leaderboard, run_benchmark
+from .src.dataloader import DataLoader, load_dataset
 from .src.encryption import (
     AdditiveSecretSharing,
     EncryptionScheme,
@@ -100,6 +100,8 @@ __all__ = [
     "Visualizer",
     "dirichlet_partition",
     "generate_linear_data",
+    "leaderboard",
+    "load_dataset",
     "run_benchmark",
     "split_data",
 ]

@@ -38,6 +38,9 @@ dependencies = [
     "pandas>=2.0",
 ]
 
+[project.scripts]
+fedbench = "fed_playground.src.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/your-org/fed-env"
 Repository = "https://github.com/your-org/fed-env"

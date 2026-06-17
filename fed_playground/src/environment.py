@@ -73,6 +73,7 @@ class Environment:
         data_loader: DataLoader | None = None,
         attack: Attack | None = None,
         n_byzantine: int = 0,
+        seed: int = 42,
     ) -> None:
         if n_parties < 1:
             raise ValueError(f"n_parties must be >= 1, got {n_parties}.")
@@ -89,6 +90,7 @@ class Environment:
         self.model_class = model_class
         self.model_params: dict[str, Any] = model_params or {}
         self.data_loader = data_loader
+        self.seed = seed
         # First n_byzantine parties are adversarial; their updates are poisoned
         # by `attack` at aggregation time.
         self.attack = attack
@@ -122,7 +124,9 @@ class Environment:
                 raise ValueError(
                     "Provide a data_loader or set both n_features and n_samples > 0."
                 )
-            X, y = generate_linear_data(self.n_samples, self.n_features)
+            X, y = generate_linear_data(
+                self.n_samples, self.n_features, random_seed=self.seed
+            )
 
         split_idx = int((1 - _TEST_SPLIT) * self.n_samples)
         X_train, X_test = X[:split_idx], X[split_idx:]

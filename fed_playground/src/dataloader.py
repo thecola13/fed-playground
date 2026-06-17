@@ -168,3 +168,58 @@ class DataLoader:
 
         X = X_df.T.values
         return X, y
+
+
+def load_dataset(kind: str = "synthetic", **opts: object) -> "DataLoader":
+    """Build a :class:`DataLoader` for a named dataset (the benchmark data layer).
+
+    Args:
+        kind: one of ``synthetic`` | ``sklearn`` | ``openml`` | ``csv``.
+        **opts: per-kind options —
+            synthetic: ``n_samples``, ``n_features``, ``seed``;
+            sklearn: ``name`` in {``breast_cancer``, ``diabetes``} (offline);
+            openml: MNIST via network (no opts);
+            csv: ``path`` (and optional ``target``).
+
+    Returns:
+        A ready-to-use ``DataLoader``.
+
+    Raises:
+        ValueError: on an unknown *kind*.
+        ImportError: if ``sklearn`` is needed but not installed (``[examples]`` extra).
+    """
+    from .utils_data import generate_linear_data  # local: avoids import cycle
+
+    if kind == "synthetic":
+        X, y = generate_linear_data(
+            int(opts.get("n_samples", 500)),  # type: ignore[arg-type]
+            int(opts.get("n_features", 4)),  # type: ignore[arg-type]
+            random_seed=int(opts.get("seed", 42)),  # type: ignore[arg-type]
+        )
+        return DataLoader(X=X, y=y)
+    if kind == "csv":
+        return DataLoader(
+            file_path=str(opts["path"]),
+            target_column=str(opts.get("target", "target")),
+        )
+    if kind == "sklearn":
+        try:
+            from sklearn import datasets as skd
+        except ImportError as exc:  # pragma: no cover - env-dependent
+            raise ImportError(
+                "sklearn datasets need the extra: `uv sync --extra examples`."
+            ) from exc
+        loaders = {
+            "breast_cancer": skd.load_breast_cancer,
+            "diabetes": skd.load_diabetes,
+        }
+        bunch = loaders[str(opts.get("name", "diabetes"))]()
+        return DataLoader(X=bunch.data, y=bunch.target)
+    if kind == "openml":  # pragma: no cover - network
+        from sklearn.datasets import fetch_openml
+
+        mnist = fetch_openml("mnist_784", version=1, as_frame=False, parser="auto")
+        return DataLoader(
+            X=mnist.data.astype("float32") / 255.0, y=mnist.target.astype(int)
+        )
+    raise ValueError(f"unknown dataset kind {kind!r}")

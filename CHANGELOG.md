@@ -7,6 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`fedbench` CLI** (`fedbench run config.toml`): declarative TOML experiments →
+  results CSV + auto-generated Markdown leaderboard. Component params are TOML
+  inline tables resolved against the public API.
+- **`load_dataset`**: synthetic / sklearn (offline) / openml-MNIST / csv data
+  sources for benchmarks.
+- **`leaderboard`**: render a results DataFrame as a Markdown pivot (NaN→"—"),
+  no `tabulate` dep, no embedded timestamp (byte-stable).
+- **`seed`** threaded through `Environment`/`run_benchmark` for reproducible runs.
+- **`benchmarks/`**: reproducible study (robustness, privacy×robustness
+  impossibility, DP utility-cost) with committed configs, leaderboards, and
+  `STUDY.md` narrative.
 - **Benchmark engine** (`run_benchmark`): one-call Cartesian sweep over
   (model × aggregation × encryption × attack × n_byzantine) → tidy DataFrame;
   incompatible privacy×robustness cells recorded as NaN, not crashes.

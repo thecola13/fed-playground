@@ -1,0 +1,31 @@
+# Differential privacy utility cost: noise mechanism x attack (FedAvg).
+[experiment]
+name = "DP utility cost — final MSE (lower is better)"
+n_parties = 8
+n_byzantine = [1]
+rounds = 8
+seed = 42
+
+[data]
+kind = "synthetic"
+n_samples = 800
+n_features = 4
+
+[grid]
+models = [{ name = "LinearRegressionModel" }]
+encryptions = [
+  { name = "NoEncryption" },
+  { name = "GaussianDPEncryption", sigma = 0.05, seed = 0 },
+  { name = "LaplaceDPEncryption", epsilon = 1.0, seed = 0 },
+]
+aggregations = [{ name = "MeanAggregation" }]
+attacks = [
+  { name = "NoAttack" },
+  { name = "SignFlipAttack", scale = 5 },
+]
+
+[output]
+results_csv = "benchmarks/privacy.csv"
+leaderboard_md = "benchmarks/privacy.md"
+leaderboard_index = "encryption"
+leaderboard_columns = "attack"

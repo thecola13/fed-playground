@@ -85,6 +85,21 @@ Runnable demos for all of the above live in `examples/` (e.g.
 `example_dp_and_secure_agg.py`, `example_elasticnet_poisson.py`,
 `example_bulyan_mom.py`, `example_privacy_utility_curve.py`).
 
+### Benchmarking (`fedbench`)
+
+Describe an experiment in TOML and run the whole sweep with one command:
+
+```bash
+fedbench run benchmarks/robustness.toml      # attack × defense matrix
+fedbench run benchmarks/impossibility.toml   # privacy × robustness frontier
+fedbench run benchmarks/privacy.toml         # DP utility cost
+```
+
+Each run writes a results CSV and a Markdown leaderboard (NaN cells = incompatible
+combinations, e.g. masking secure-aggregation × order-statistic defense). The
+committed [`benchmarks/STUDY.md`](benchmarks/STUDY.md) interprets the three —
+reproducible byte-for-byte under the configs' fixed seeds.
+
 ### Optional: Fully Homomorphic Encryption (FHE)
 
 The `[fhe]` optional extra installs **Concrete ML** (Zama's FHE library).

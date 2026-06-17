@@ -1,0 +1,13 @@
+model,aggregation,encryption,attack,n_byzantine,final_loss,status
+ClosedFormLinearRegressionModel,MeanAggregation,NoEncryption,NoAttack,0,0.011704816453663558,ok
+ClosedFormLinearRegressionModel,MeanAggregation,GaussianDPEncryption,NoAttack,0,0.011496472573499375,ok
+ClosedFormLinearRegressionModel,MeanAggregation,AdditiveSecretSharing,NoAttack,0,0.011704816453663567,ok
+ClosedFormLinearRegressionModel,MeanAggregation,PairwiseMaskingEncryption,NoAttack,0,0.01170481645366359,ok
+ClosedFormLinearRegressionModel,MedianAggregation,NoEncryption,NoAttack,0,0.011766455984424698,ok
+ClosedFormLinearRegressionModel,MedianAggregation,GaussianDPEncryption,NoAttack,0,0.011540761905834725,ok
+ClosedFormLinearRegressionModel,MedianAggregation,AdditiveSecretSharing,NoAttack,0,,"incompatible: MedianAggregation needs per-party plaintext values, but AdditiveSe"
+ClosedFormLinearRegressionModel,MedianAggregation,PairwiseMaskingEncryption,NoAttack,0,,"incompatible: MedianAggregation needs per-party plaintext values, but PairwiseMa"
+ClosedFormLinearRegressionModel,KrumAggregation,NoEncryption,NoAttack,0,0.011680504044557661,ok
+ClosedFormLinearRegressionModel,KrumAggregation,GaussianDPEncryption,NoAttack,0,0.012213789713892826,ok
+ClosedFormLinearRegressionModel,KrumAggregation,AdditiveSecretSharing,NoAttack,0,,"incompatible: KrumAggregation needs per-party plaintext values, but AdditiveSecr"
+ClosedFormLinearRegressionModel,KrumAggregation,PairwiseMaskingEncryption,NoAttack,0,,"incompatible: KrumAggregation needs per-party plaintext values, but PairwiseMask"
